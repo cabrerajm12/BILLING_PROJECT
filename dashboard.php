@@ -12,14 +12,14 @@ $student_id = $_SESSION["student"]["student_id"];
 
 // Fetch latest student info
 $stmt = $conn->prepare("SELECT * FROM students WHERE student_id=?");
-$stmt->bind_param("s",$student_id);
+$stmt->bind_param("s", $student_id);
 $stmt->execute();
 $student = $stmt->get_result()->fetch_assoc();
 
 // Tuition calculations
 $total = round(floatval($student["tuition_total"]),2);
 $paid = round(floatval($student["tuition_paid"]),2);
-$balance = max($total-$paid,0);
+$balance = max($total - $paid, 0);
 $progress = $total>0 ? ($paid/$total)*100 : 0;
 $progress = min($progress,100);
 ?>
@@ -43,6 +43,7 @@ $progress = min($progress,100);
         .progress-bar {height:100%; width:<?php echo $progress; ?>%; text-align:center; color:white; font-size:0.8rem; line-height:18px; font-weight:bold; border-radius:10px; transition:width 0.5s ease; background-color:<?php echo ($progress<50)?"#dc2626":($progress<100?"#f59e0b":"#16a34a"); ?>;}
         .balance-status {display:inline-block; margin-left:8px; padding:2px 8px; font-size:0.75rem; border-radius:12px; color:white; background-color:<?php echo ($balance==0)?"#16a34a":"#f59e0b"; ?>;}
         @media(max-width:700px){.grid{flex-direction:column;}}
+        /* Modal Styles */
         #payModal {display:none; position:fixed; z-index:999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5);}
         #payModal .modal-content {background:#fff; margin:10% auto; padding:20px; border-radius:12px; width:90%; max-width:500px; position:relative;}
         #payModal .close {position:absolute; top:10px; right:15px; font-size:28px; font-weight:bold; cursor:pointer; color:#aaa;}
@@ -140,13 +141,26 @@ $progress = min($progress,100);
         <p id="paymentMsg" style="margin-top:10px;"></p>
     </div>
 </div>
+
 <!-- Notification -->
 <div id="paymentNotification" style="position:fixed; top:20px; right:20px; background:#16a34a; color:white; padding:12px 20px; border-radius:8px; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:1000;">
     Payment Successful!
 </div>
+
 <script>
 function openPayModal(){
-    document.getElementById('payModal').style.display='block';
+    fetch('pay_tuition_fetch.php')
+    .then(res => res.json())
+    .then(data => {
+        if(data.success){
+            const amountInput = document.getElementById('amountInput');
+            amountInput.max = data.balance;
+            amountInput.placeholder = "₱0.00 (Max ₱" + parseFloat(data.balance).toFixed(2) + ")";
+            document.getElementById('payModal').style.display='block';
+        } else {
+            alert(data.message);
+        }
+    });
 }
 
 function closePayModal(){ document.getElementById('payModal').style.display='none'; }
@@ -186,66 +200,20 @@ document.getElementById('payForm').addEventListener('submit', function(e){
         body: formData
     }).then(res=>res.json()).then(data=>{
         const msg = document.getElementById('paymentMsg');
-        if(data.success){
-            document.getElementById('amountPaid').textContent = '₱'+parseFloat(data.new_paid).toFixed(2);
-            document.getElementById('balanceDue').textContent = '₱'+parseFloat(data.new_balance).toFixed(2);
-            document.getElementById('progressBar').style.width = data.progress+'%';
-            document.getElementById('progressBar').textContent = Math.round(data.progress)+'%';
-            msg.style.color='green';
-            msg.textContent=data.message;
-            if(data.new_balance<=0){
-                document.getElementById('payBtn').remove();
-                const span = document.createElement('span');
-                span.className='balance-status';
-                span.textContent='Paid in Full';
-                document.getElementById('balanceDue').parentNode.appendChild(span);
-            }
-            setTimeout(()=>{ closePayModal(); msg.textContent=''; },1500);
-        } else{
-            msg.style.color='red';
-            msg.textContent=data.message;
-        }
-    });
-});
-
-function openPayModal(){
-    // Fetch latest balance
-    fetch('pay_tuition_fetch.php')
-    .then(res => res.json())
-    .then(data => {
-        if(data.success){
-            const amountInput = document.getElementById('amountInput');
-            amountInput.max = data.balance; // Limit input
-            amountInput.placeholder = "₱0.00 (Max ₱" + parseFloat(data.balance).toFixed(2) + ")";
-        }
-    });
-    document.getElementById('payModal').style.display='block';
-}
-document.getElementById('payForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    const formData = new FormData(this);
-    fetch('pay_tuition_process.php',{
-        method:'POST',
-        body: formData
-    }).then(res=>res.json()).then(data=>{
-        const msg = document.getElementById('paymentMsg');
         const notification = document.getElementById('paymentNotification');
         const payBtn = document.getElementById('payBtn');
 
         if(data.success){
-            // Update dashboard values
             document.getElementById('amountPaid').textContent = '₱'+parseFloat(data.new_paid).toFixed(2);
             document.getElementById('balanceDue').textContent = '₱'+parseFloat(data.new_balance).toFixed(2);
             const progressBar = document.getElementById('progressBar');
             progressBar.style.width = data.progress+'%';
             progressBar.textContent = Math.round(data.progress)+'%';
 
-            // Show confirmation notification
             notification.textContent = data.message;
             notification.style.display = 'block';
             setTimeout(()=>{ notification.style.display='none'; }, 2500);
 
-            // Remove Pay button if balance is 0
             if(parseFloat(data.new_balance) <= 0 && payBtn){
                 payBtn.remove();
                 const balanceSpan = document.createElement('span');
@@ -254,7 +222,6 @@ document.getElementById('payForm').addEventListener('submit', function(e){
                 document.getElementById('balanceDue').parentNode.appendChild(balanceSpan);
             }
 
-            // Close modal
             setTimeout(()=>{ closePayModal(); msg.textContent=''; },1500);
         } else{
             msg.style.color='red';
@@ -262,7 +229,6 @@ document.getElementById('payForm').addEventListener('submit', function(e){
         }
     }).catch(err=>console.error(err));
 });
-
 </script>
 </body>
 </html>
