@@ -16,21 +16,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $contact_number = $_POST['contact_number'];
     $semester = $_POST['semester'];
+    $tuition_total = $_POST['tuition_total'];
 
-    // Prepare statement to prevent SQL injection
-    $stmt = $conn->prepare("UPDATE students SET full_name=?, course=?, year_level=?, email=?, contact_number=?, semester=? WHERE student_id=?");
-    $stmt->bind_param("ssssssi", $full_name, $course, $year_level, $email, $contact_number, $semester, $student_id);
+    // Validate semester
+    if ($semester !== "1st Semester" && $semester !== "2nd Semester") {
+        header("Location: admin_dashboard.php?msg=Invalid semester value ❌");
+        exit();
+    }
+
+    // Ensure tuition is numeric
+    $tuition_total = floatval(str_replace(',', '', $tuition_total));
+
+    // Update student
+    $stmt = $conn->prepare("UPDATE students SET full_name=?, course=?, year_level=?, email=?, contact_number=?, semester=?, tuition_total=? WHERE student_id=?");
+    $stmt->bind_param("sssssdii", $full_name, $course, $year_level, $email, $contact_number, $semester, $tuition_total, $student_id);
 
     if ($stmt->execute()) {
-        $_SESSION['message'] = "Student updated successfully!";
+        header("Location: admin_dashboard.php?msg=Student updated successfully ✅");
     } else {
-        $_SESSION['error'] = "Error updating student: " . $stmt->error;
+        header("Location: admin_dashboard.php?msg=Error updating student ❌");
     }
 
     $stmt->close();
     $conn->close();
-
-    header("Location: admin_dashboard.php");
     exit();
 } else {
     header("Location: admin_dashboard.php");

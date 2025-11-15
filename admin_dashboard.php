@@ -1,13 +1,16 @@
 <?php
 session_start();
-
-// Prevent access if not logged in
 if (!isset($_SESSION["admin"])) {
     header("Location: login.php");
     exit();
 }
+include "config.php";
 
-include "config.php"; 
+// Handle messages from update/delete
+$msg = "";
+if(isset($_GET['msg'])) {
+    $msg = htmlspecialchars($_GET['msg']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -18,12 +21,12 @@ include "config.php";
 <title>Admin Dashboard</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 <style>
-/* --- Styles same as before --- */
+/* ----------- CSS Same as Before ----------- */
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #032558ff; padding: 40px 20px; display: flex; justify-content: center; min-height: 100vh; }
 .container { background: #fff; width: 100%; max-width: 900px; border-radius: 16px; padding: 32px 40px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
 h2 { text-align: center; font-size: 2rem; margin-bottom: 36px; color: #1c1f36; }
-.actions { display: flex; justify-content: center; gap: 20px; margin-bottom: 40px; }
+.actions { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
 a.button { background: #2563eb; color: #fff; padding: 14px 28px; border-radius: 12px; font-weight: 700; text-decoration: none; transition: 0.3s; }
 a.button:hover { background: #1d4ed8; }
 a.logout { background: #dc2626; }
@@ -52,7 +55,7 @@ tbody tr:hover { background: #e0e7ff; }
 
 /* Floating Messages */
 #message-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; align-items: flex-end; }
-.message-bubble { padding: 8px 14px; border-radius: 12px; margin-top: 10px; color: #fff; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); opacity: 0; transform: translateY(-20px); transition: opacity 0.5s, transform 0.5s; font-family: 'Segoe UI', sans-serif; font-weight: 600; font-size: 13px; text-align: center; cursor: pointer; }
+.message-bubble { padding: 8px 14px; border-radius: 12px; margin-top: 10px; color: #fff; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); opacity: 1; font-family: 'Segoe UI', sans-serif; font-weight: 600; font-size: 13px; text-align: center; cursor: pointer; }
 .message-success { background: #16a34a; }
 .message-error { background: #dc2626; }
 </style>
@@ -60,6 +63,14 @@ tbody tr:hover { background: #e0e7ff; }
 <body>
 <div class="container">
 <h2>Admin Dashboard</h2>
+
+<?php if($msg != ""): ?>
+    <div id="message-container">
+        <div class="message-bubble <?php echo strpos($msg,'success')!==false?'message-success':'message-error'; ?>">
+            <?php echo $msg; ?>
+        </div>
+    </div>
+<?php endif; ?>
 
 <div class="actions">
     <a href="admin_add_student.php" class="button">
@@ -112,7 +123,7 @@ if (!$result) {
                         <i class='fas fa-edit'></i> Edit
                     </button>
                     <button class='action-btn delete-btn' 
-                        onclick='openDeleteModal(" . $row["student_id"] . ")'>
+                        onclick='openDeleteModal(" . $row["student_id"] . ", \"" . htmlspecialchars(addslashes($row["full_name"])) . "\")'>
                         <i class='fas fa-trash-alt'></i> Delete
                     </button>
                 </td>
@@ -150,6 +161,19 @@ if (!$result) {
     </div>
 </div>
 
+<!-- Delete Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeDeleteModal()">&times;</span>
+        <h3>Confirm Deletion</h3>
+        <p id="deleteMessage">Are you sure you want to delete this student?</p>
+        <div style="text-align: right;">
+            <button id="confirmDeleteBtn" class="save-btn">Yes, Delete</button>
+            <button class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <script>
 function openEditModal(student) {
     document.getElementById('edit_student_id').value = student.student_id;
@@ -159,30 +183,48 @@ function openEditModal(student) {
     document.getElementById('edit_email').value = student.email;
     document.getElementById('edit_contact_number').value = student.contact_number;
     document.getElementById('edit_semester').value = student.semester;
-    // Format tuition with ₱ and commas
-    document.getElementById('edit_tuition_total').value = "₱" + parseFloat(student.tuition_total).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('edit_tuition_total').value = parseFloat(student.tuition_total).toFixed(2);
     document.getElementById('editModal').style.display = 'block';
 }
 
-document.getElementById('editForm').addEventListener('submit', function(e) {
-    // Remove ₱ and commas before sending
-    let tuitionInput = document.getElementById('edit_tuition_total');
-    tuitionInput.value = tuitionInput.value.replace(/[₱,]/g, '');
+// Delete Modal
+let deleteStudentId = null;
+function openDeleteModal(id, name) {
+    deleteStudentId = id;
+    document.getElementById('deleteMessage').innerText = `Are you sure you want to delete "${name}"?`;
+    document.getElementById('deleteModal').style.display = 'block';
+}
+document.getElementById('confirmDeleteBtn').addEventListener('click', function(){
+    if(deleteStudentId !== null){
+        window.location.href = "admin_delete_student.php?id=" + deleteStudentId;
+    }
 });
 
 function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
-
-function openDeleteModal(student_id) {
-    document.getElementById('delete_student_id').value = student_id;
-    document.getElementById('deleteModal').style.display = 'block';
-}
-
 function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+
+// Remove formatting before submitting
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    let tuitionInput = document.getElementById('edit_tuition_total');
+    tuitionInput.value = tuitionInput.value.replace(/[₱,]/g, '');
+});
 
 window.onclick = function(event) {
     if (event.target == document.getElementById('editModal')) closeEditModal();
     if (event.target == document.getElementById('deleteModal')) closeDeleteModal();
 }
+
+// Auto-hide message after 3 seconds
+window.addEventListener('DOMContentLoaded', () => {
+    const message = document.querySelector('#message-container');
+    if (message) {
+        setTimeout(() => {
+            message.style.transition = "opacity 0.5s ease";
+            message.style.opacity = 0;
+            setTimeout(() => message.remove(), 500);
+        }, 3000); // 3000ms = 3 seconds
+    }
+});
 </script>
 </body>
 </html>
