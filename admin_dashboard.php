@@ -22,7 +22,7 @@ include "config.php";
         body {
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
+              background: #032558ff;
             padding: 40px 20px;
             display: flex;
             justify-content: center;

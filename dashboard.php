@@ -29,7 +29,7 @@ $paymentStatus = ($balance == 0) ? "Paid in Full" : "Pending";
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
+              background: #032558ff;
             padding: 30px;
         }
 
@@ -41,7 +41,7 @@ $paymentStatus = ($balance == 0) ? "Paid in Full" : "Pending";
         }
 
         .header h1 {
-            color: #1e3a8a;
+            color: #ffffffff;
             font-size: 1.8rem;
         }
 

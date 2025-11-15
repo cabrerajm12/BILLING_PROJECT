@@ -4,7 +4,7 @@ include "config.php";
 
 $errorAdmin = "";
 $errorStudent = "";
-$activeTab = "admin"; // Default tab
+$activeTab = "student"; // Default tab
 
 // Admin login
 if (isset($_POST['admin_login'])) {
@@ -49,97 +49,118 @@ if (isset($_POST['student_login'])) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Login Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
     body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: #f5f7fa;
+        font-family: 'Inter', sans-serif;
+        background: #032558ff;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
         margin: 0;
-        padding: 20px;
     }
+
     .login-card {
-        background: white;
-        width: 400px;
+        background: #fff;
+        width: 360px;
         border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        padding: 32px;
-        box-sizing: border-box;
-    }
-    h2 {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        padding: 30px 24px;
         text-align: center;
-        margin-bottom: 10px;
     }
+
+    .login-card h2 {
+        margin: 0 0 8px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .login-card p {
+        margin: 0 0 20px;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
     .tabs {
         display: flex;
-        justify-content: space-around;
         margin-bottom: 20px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f3f4f6;
     }
+
     .tabs button {
         flex: 1;
-        padding: 10px;
-        cursor: pointer;
+        padding: 10px 0;
         border: none;
-        border-bottom: 2px solid transparent;
         background: transparent;
-        font-weight: bold;
-        transition: 0.3s;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.3s;
+        color: #6b7280;
     }
+
     .tabs button.active {
-        border-color: #1e40af;
-        color: #1e40af;
+        background: #1e40af;
+        color: #fff;
     }
+
     form {
         display: none;
         flex-direction: column;
+        gap: 12px;
+        text-align: left;
     }
+
     form.active {
         display: flex;
     }
+
     input {
-        padding: 12px;
-        margin-bottom: 15px;
+        padding: 10px 12px;
         border-radius: 8px;
         border: 1px solid #d1d5db;
-        font-size: 1rem;
+        width: 90%;
+        font-size: 0.95rem;
     }
+
     button.submit-btn {
         background: #1e40af;
         color: white;
-        padding: 12px;
+        padding: 10px;
         border: none;
         border-radius: 8px;
+        font-weight: 600;
         cursor: pointer;
-        font-weight: bold;
+        transition: background 0.3s;
+        width: 100%;
+        font-size: 0.95rem;
     }
+
     button.submit-btn:hover {
-        background: #153eac;
+        background: #1d4ed8;
     }
+
     .error {
         color: #dc2626;
+        font-size: 0.85rem;
         text-align: center;
-        margin-bottom: 15px;
         font-weight: 600;
     }
+
 </style>
 </head>
 <body>
 
 <div class="login-card">
-    <div class="tabs">
-        <button id="adminTab">Admin Login</button>
-        <button id="studentTab">Student Login</button>
-    </div>
+    <h2>Student Portal</h2>
+    <p>Access your student information</p>
 
-    <!-- Admin Form -->
-    <form id="adminForm" method="POST">
-        <?php if($errorAdmin != "") echo "<div class='error'>$errorAdmin</div>"; ?>
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit" name="admin_login" class="submit-btn">Login</button>
-    </form>
+    <div class="tabs">
+        <button id="studentTab">Login</button>
+        <button id="adminTab">Admin</button>
+    </div>
 
     <!-- Student Form -->
     <form id="studentForm" method="POST">
@@ -147,6 +168,14 @@ if (isset($_POST['student_login'])) {
         <input type="text" name="student_id" placeholder="Student ID" required>
         <input type="password" name="student_password" placeholder="Password" required>
         <button type="submit" name="student_login" class="submit-btn">Login</button>
+    </form>
+
+    <!-- Admin Form -->
+    <form id="adminForm" method="POST">
+        <?php if($errorAdmin != "") echo "<div class='error'>$errorAdmin</div>"; ?>
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit" name="admin_login" class="submit-btn">Login</button>
     </form>
 </div>
 
@@ -173,7 +202,7 @@ if (isset($_POST['student_login'])) {
     adminTab.addEventListener('click', () => switchTab('admin'));
     studentTab.addEventListener('click', () => switchTab('student'));
 
-    // Set active tab based on PHP variable
+    // Set default active tab
     switchTab("<?php echo $activeTab; ?>");
 </script>
 
