@@ -1,28 +1,32 @@
     <?php
-    include "config.php";
+include "config.php";
 
-    $message = "";
+$message = "";
 
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $student_id = $_POST["student_id"];
-        $name = $_POST["name"];
-        $course = $_POST["course"];
-        $year_level = $_POST["year_level"];
-        $email = $_POST["email"];
-        $contact = $_POST["contact"];
-        $password = $_POST["password"];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-        // Insert student into database
-        $sql = "INSERT INTO students (student_id, name, course, year_level, email, contact, password)
-                VALUES ('$student_id', '$name', '$course', '$year_level', '$email', '$contact', '$password')";
+    $student_id = $_POST["student_id"];
+    $name = $_POST["name"];
+    $course = $_POST["course"];
+    $year_level = $_POST["year_level"];
+    $email = $_POST["email"];
+    $contact = $_POST["contact"];
+    $password = $_POST["password"];
 
-        if ($conn->query($sql) === TRUE) {
-            $message = "Student successfully added!";
-        } else {
-            $message = "Error: " . $conn->error;
-        }
+    // Insert student into database
+    $sql = "INSERT INTO students 
+            (student_id, password, full_name, course, year_level, email, contact_number, tuition_total, tuition_paid)
+            VALUES 
+            ('$student_id', '$password', '$name', '$course', '$year_level', '$email', '$contact', 0, 0)";
+
+    if ($conn->query($sql) === TRUE) {
+        $message = "Student successfully added!";
+    } else {
+        $message = "Error: " . $conn->error;
     }
-    ?>
+}
+?>
+
 
     <!DOCTYPE html>
     <html lang="en">
