@@ -11,13 +11,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $year_level = $_POST["year_level"];
     $email = $_POST["email"];
     $contact = $_POST["contact"];
+    $semester = $_POST["semester"];
     $password = $_POST["password"];
 
     // Insert student into database
     $sql = "INSERT INTO students 
-            (student_id, password, full_name, course, year_level, email, contact_number, tuition_total, tuition_paid)
+            (student_id, password, full_name, course, year_level, email, contact_number, semester, tuition_total, tuition_paid)
             VALUES 
-            ('$student_id', '$password', '$name', '$course', '$year_level', '$email', '$contact', 0, 0)";
+            ('$student_id', '$password', '$name', '$course', '$year_level', '$email', '$contact', '$semester', 0, 0)";
 
     if ($conn->query($sql) === TRUE) {
         $message = "Student successfully added!";
@@ -199,6 +200,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="form-group">
                 <i class="fas fa-phone"></i>
                 <input type="text" name="contact" placeholder="Contact Number" required>
+            </div>
+            <div class="form-group">
+                <i class="fas fa-calendar-alt"></i>
+                <select name="semester" required>
+                    <option value="">Select Semester</option>
+                    <option value="1st Semester">1st Semester</option>
+                    <option value="2nd Semester">2nd Semester</option>
+                </select>
             </div>
             <div class="form-group">
                 <i class="fas fa-lock"></i>

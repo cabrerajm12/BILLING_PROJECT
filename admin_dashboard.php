@@ -108,7 +108,7 @@ include "config.php";
     <div class="table-container">
         <?php
         
-        $sql = "SELECT student_id, full_name, course, year_level, email, contact_number 
+        $sql = "SELECT student_id, full_name, course, year_level, email, contact_number, semester
                 FROM students 
                 ORDER BY student_id DESC";
 
@@ -127,6 +127,7 @@ include "config.php";
                             <th>Year</th>
                             <th>Email</th>
                             <th>Contact No.</th>
+                            <th>Semester</th>
                         </tr>
                     </thead>
                     <tbody>";
@@ -139,6 +140,7 @@ include "config.php";
                         <td>" . htmlspecialchars($row["year_level"]) . "</td>
                         <td>" . htmlspecialchars($row["email"]) . "</td>
                         <td>" . htmlspecialchars($row["contact_number"]) . "</td>
+                        <td>" . htmlspecialchars($row["semester"]) . "</td>
                       </tr>";
             }
 
